@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vitesse du vent — New York</title>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    h1 { font-size: 2em; margin-bottom: 10px; }
+    p { color: #aaa; margin-bottom: 30px; }
+    #chart { background: white; border-radius: 20px; padding: 20px; }
+    #status { margin-top: 20px; color: #aaa; }
+  </style>
+</head>
+<body>
+  <h1>💨 Vitesse du vent — New York</h1>
+  <p>Prévisions horaires pour les 7 prochains jours</p>
+  <div id="chart"></div>
+  <div id="status"></div>
+  <script>
+    google.charts.load('current', { packages: ['gauge'] });
+    google.charts.setOnLoadCallback(init);
+
+    async function init() {
+      try {
+        const res = await fetch('/newyork', { headers: { 'Accept': 'application/json' } });
+        const json = await res.json();
+
+        const current = json[0].wind_speed;
+
+        const data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['km/h', current]
+        ]);
+
+        const options = {
+          width: 400, height: 400,
+          redFrom: 60, redTo: 100,
+          yellowFrom: 30, yellowTo: 60,
+          greenFrom: 0, greenTo: 30,
+          minorTicks: 5,
+          max: 100
+        };
+
+        const chart = new google.visualization.Gauge(document.getElementById('chart'));
+        chart.draw(data, options);
+        document.getElementById('status').textContent = `Vitesse actuelle : ${current} km/h`;
+      } catch (err) {
+        document.getElementById('status').textContent = "Erreur: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
